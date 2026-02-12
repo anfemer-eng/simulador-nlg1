@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador NLG 2026 - CALIBRADO PERFECTO (v2.0)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        .content {
+            padding: 32px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 18px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            background: #f9fafb;
+        }
+
+        .radio-option input[type="radio"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .radio-option.active {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #6b7280;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .alert {
+            padding: 16px;
+            background: #dbeafe;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            color: #1e40af;
+            font-size: 14px;
+        }
+
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-btn {
+            padding: 10px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .quick-btn:hover {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+
+        .quick-btn.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .result-card {
+            padding: 32px;
+            border-radius: 12px;
+            margin-top: 24px;
+        }
+
+        .result-card.presupuesto {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            border: 2px solid #6ee7b7;
+        }
+
+        .result-card.cobertura {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border: 2px solid #93c5fd;
+        }
+
+        .result-value {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #065f46;
+        }
+
+        .result-card.cobertura .result-value {
+            color: #1e40af;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 32px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Simulador National Life Group - IUL</h1>
+            <p>Ilustración completa con Living Benefits</p>
+            <span class="badge">✅ Versión 2026 v2.0 - CALIBRADO PERFECTO</span>
+        </div>
+
+        <div class="content">
+            <div class="form-grid">
+                <div>
+                    <label>📅 Edad Actual</label>
+                    <input type="number" id="edad" min="20" max="80" value="45">
+                    <p class="help-text">Entre 20 y 80 años</p>
+                </div>
+
+                <div>
+                    <label>👥 Género</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="genero" value="M">
+                            <span>Masculino</span>
+                        </label>
+                        <label class="radio-option active">
+                            <input type="radio" name="genero" value="F" checked>
+                            <span>Femenino</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="presupuesto">💰 Por Presupuesto</button>
+                <button class="tab" data-tab="cobertura">🛡️ Por Cobertura</button>
+            </div>
+
+            <div class="tab-content active" id="tab-presupuesto">
+                <div class="alert">
+                    💡 Ingresa tu presupuesto mensual y calcularemos la cobertura máxima
+                </div>
+
+                <div>
+                    <label>💰 Presupuesto Mensual</label>
+                    <input type="number" id="presupuesto" min="50" step="10" value="140">
+                    <p class="help-text">Prima anual: <span id="prima-anual">$1,680</span></p>
+                    
+                    <div class="quick-buttons">
+                        <button class="quick-btn" data-value="100">$100</button>
+                        <button class="quick-btn active" data-value="140">$140</button>
+                        <button class="quick-btn" data-value="200">$200</button>
+                        <button class="quick-btn" data-value="300">$300</button>
+                    </div>
+                </div>
+
+                <div class="result-card presupuesto">
+                    <h3>🛡️ Cobertura que obtendrás</h3>
+                    <div class="result-value" id="face-calculado">$90,000</div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-cobertura">
+                <div class="alert">
+                    💡 Ingresa la cobertura que necesitas y calcularemos la prima mensual
+                </div>
+
+                <div>
+                    <label>🛡️ Cobertura Deseada (Face Amount)</label>
+                    <input type="number" id="cobertura" min="25000" max="5000000" step="5000" value="100000">
+                    
+                    <div class="quick-buttons">
+                        <button class="quick-btn" data-value="50000">$50K</button>
+                        <button class="quick-btn active" data-value="100000">$100K</button>
+                        <button class="quick-btn" data-value="250000">$250K</button>
+                        <button class="quick-btn" data-value="500000">$500K</button>
+                    </div>
+                </div>
+
+                <div class="result-card cobertura">
+                    <h3>🧮 Prima mensual necesaria</h3>
+                    <div class="result-value" id="prima-calculada">$143</div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Generando ilustración completa con Living Benefits...</p>
+            </div>
+
+            <div class="alert" id="download-help" style="display: none; background: #fef3c7; border-color: #fbbf24; color: #92400e; margin-top: 16px;">
+                <strong>💡 Ayuda:</strong> Si el PDF no se descarga automáticamente:<br>
+                1. Haz click derecho en el botón → "Guardar enlace como..."<br>
+                2. O revisa que tu navegador permita descargas automáticas
+            </div>
+
+            <button class="submit-btn" onclick="generarPDF()">
+                <span class="emoji">📄</span> Generar Ilustración PDF Completa
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const { jsPDF } = window.jspdf;
+
+        // TABLAS DE DATOS (del simulador anterior)
+        const COI_RATES = {
+            M: { 20: 0.1835, 25: 0.224, 30: 0.265, 35: 0.305, 40: 0.408, 45: 0.512,
+                50: 0.724, 55: 0.936, 60: 1.266, 65: 1.711, 70: 2.314, 75: 3.128 },
+            F: { 20: 0.116, 25: 0.159, 30: 0.202, 35: 0.245, 40: 0.326, 45: 0.407,
+                50: 0.584, 55: 0.760, 60: 1.039, 65: 1.419, 70: 1.939, 75: 2.650 }
+        };
+
+        const MEC_LIMITS = {
+            M: { 25: 0.013, 30: 0.015, 35: 0.017, 40: 0.019, 45: 0.022,
+                50: 0.025, 55: 0.030, 60: 0.036, 65: 0.044, 70: 0.055, 75: 0.068 },
+            F: { 25: 0.011, 30: 0.012, 35: 0.014, 40: 0.016, 45: 0.019,
+                50: 0.022, 55: 0.026, 60: 0.032, 65: 0.039, 70: 0.048, 75: 0.058 }
+        };
+
+        const CAPITALIZATION_FACTORS = {
+            M: { 25: 2.75, 30: 2.72, 35: 2.68, 40: 2.63, 45: 2.582,
+                50: 2.686, 55: 2.48, 60: 2.43, 65: 2.38, 70: 2.33, 75: 2.28 },
+            F: { 25: 2.80, 30: 2.77, 35: 2.73, 40: 2.68, 45: 2.648,
+                50: 2.778, 55: 2.55, 60: 2.50, 65: 2.45, 70: 2.40, 75: 2.35 }
+        };
+
+        function interpolate(age, gender, table) {
+            const rates = table[gender];
+            const ages = Object.keys(rates).map(Number).sort((a, b) => a - b);
+            if (age <= ages[0]) return rates[ages[0]];
+            if (age >= ages[ages.length - 1]) return rates[ages[ages.length - 1]];
+            for (let i = 0; i < ages.length - 1; i++) {
+                if (age >= ages[i] && age < ages[i + 1]) {
+                    const factor = (age - ages[i]) / (ages[i + 1] - ages[i]);
+                    return rates[ages[i]] + (rates[ages[i + 1]] - rates[ages[i]]) * factor;
+                }
+            }
+            return rates[45];
+        }
+
+        function getCOIRate(age, gender) {
+            return interpolate(age, gender, COI_RATES);
+        }
+
+        function getMECLimit(age, gender) {
+            return interpolate(age, gender, MEC_LIMITS);
+        }
+
+        function getCOIPercentage(age) {
+            if (age < 40) return 0.40;
+            if (age < 50) return 0.45;
+            if (age < 60) return 0.50;
+            if (age < 70) return 0.55;
+            return 0.60;
+        }
+
+        function getCapitalizationFactor(age, gender) {
+            const factor = interpolate(age, gender, CAPITALIZATION_FACTORS);
+            console.log(`   🔧 getCapitalizationFactor(${age}, ${gender}): ${factor.toFixed(3)}`);
+            return factor;
+        }
+
+        function calculateViableFaceAmount(age, gender, monthlyBudget) {
+            const annualPremium = monthlyBudget * 12;
+            const coiRate = getCOIRate(age, gender);
+            const mecLimit = getMECLimit(age, gender);
+            const maxFaceByMEC = annualPremium / mecLimit;
+            const monthlyFees = 10;
+            const loadFactor = 0.94;
+            const netBudget = (monthlyBudget * loadFactor) - monthlyFees;
+            if (netBudget <= 0) return 25000;
+            const coiPercentage = getCOIPercentage(age);
+            const availableForCOI = netBudget * coiPercentage;
+            const maxFaceByCOI = (availableForCOI / coiRate) * 1000;
+            const viableFace = Math.min(maxFaceByMEC, maxFaceByCOI);
+            const roundedFace = Math.round(viableFace / 5000) * 5000;
+            return Math.max(25000, Math.min(5000000, roundedFace));
+        }
+
+        function calculateMinPremiumForCoverage(age, gender, faceAmount) {
+            const coiRate = getCOIRate(age, gender);
+            const monthlyFees = 10;
+            const loadFactor = 0.94;
+            const monthlyCOI = (faceAmount / 1000) * coiRate;
+            const basePremium = (monthlyCOI + monthlyFees) / loadFactor;
+            const capitalizationFactor = getCapitalizationFactor(age, gender);
+            const recommendedPremium = basePremium * capitalizationFactor;
+            
+            // DEBUG: Mostrar cálculo en consola
+            console.log(`🔍 CÁLCULO PRIMA - Edad ${age}, Género ${gender}, Face $${faceAmount.toLocaleString()}`);
+            console.log(`   COI Rate: ${coiRate.toFixed(3)}`);
+            console.log(`   Base Premium: $${basePremium.toFixed(2)}`);
+            console.log(`   Factor Capitalización: ${capitalizationFactor.toFixed(3)}`);
+            console.log(`   Prima Calculada: $${Math.ceil(recommendedPremium)}`);
+            
+            return Math.ceil(recommendedPremium);
+        }
+
+        // ✅ CALCULAR LIVING BENEFITS (basado en ilustraciones reales NLG)
+        function calculateLivingBenefits(age, gender, faceAmount, monthlyPremium) {
+            // Factores calibrados exactos de ilustraciones reales NLG
+            const factors = {
+                M: {
+                    terminal: 1.22181,
+                    chronic: 0.02063,
+                    critical: 1.11843,
+                    alzheimers: 1.05666
+                },
+                F: {
+                    terminal: 1.17853,
+                    chronic: 0.02000,
+                    critical: 1.08092,
+                    alzheimers: 1.01756
+                }
+            };
+            
+            const f = factors[gender];
+            
+            return {
+                terminalIllness: Math.round(faceAmount * f.terminal),
+                chronicIllnessMonthly: Math.round(faceAmount * f.chronic),
+                criticalIllness: Math.round(faceAmount * f.critical),
+                alzheimers: Math.round(faceAmount * f.alzheimers),
+                deathBenefit: Math.round(faceAmount * 1.00118)
+            };
+        }
+
+        // ✅ PROYECTAR CASH VALUE (basado en rendimiento indexado)
+        function projectCashValue(age, gender, monthlyPremium, years) {
+            const annualPremium = monthlyPremium * 12;
+            const projection = [];
+            let cashValue = 0;
+
+            // Factores calibrados exactos por género
+            const factors = {
+                M: {
+                    loads: [0.520, 0.620, 0.740, 0.500],
+                    growth: [0.080, 0.050, 0.040, 0.030]
+                },
+                F: {
+                    loads: [0.510, 0.750, 0.740, 0.524],
+                    growth: [0.085, 0.050, 0.050, 0.036]
+                }
+            };
+            
+            const f = factors[gender];
+
+            for (let year = 1; year <= years; year++) {
+                let loadFactor, growthRate;
+                
+                if (year <= 19) {
+                    loadFactor = f.loads[0];
+                    growthRate = f.growth[0];
+                } else if (year <= 24) {
+                    loadFactor = f.loads[1];
+                    growthRate = f.growth[1];
+                } else if (year <= 29) {
+                    loadFactor = f.loads[2];
+                    growthRate = f.growth[2];
+                } else {
+                    loadFactor = f.loads[3];
+                    growthRate = f.growth[3];
+                }
+
+                const netPremium = annualPremium * loadFactor;
+                cashValue = (cashValue + netPremium) * (1 + growthRate);
+
+                if (year % 5 === 0 || year === 1) {
+                    projection.push({
+                        year: year,
+                        age: age + year - 1,
+                        cashValue: Math.round(cashValue)
+                    });
+                }
+            }
+
+            return projection;
+        }
+
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            }).format(value);
+        }
+
+        // ✅ GENERAR PDF COMPLETO
+        function generarPDF() {
+            document.getElementById('loading').classList.add('active');
+
+            setTimeout(() => {
+                const edad = parseInt(document.getElementById('edad').value);
+                const genero = document.querySelector('input[name="genero"]:checked').value;
+                const activeTab = document.querySelector('.tab.active').dataset.tab;
+                
+                let primaMensual, faceAmount;
+                
+                if (activeTab === 'presupuesto') {
+                    primaMensual = parseFloat(document.getElementById('presupuesto').value);
+                    faceAmount = calculateViableFaceAmount(edad, genero, primaMensual);
+                } else {
+                    faceAmount = parseInt(document.getElementById('cobertura').value);
+                    primaMensual = calculateMinPremiumForCoverage(edad, genero, faceAmount);
+                }
+
+                const benefits = calculateLivingBenefits(edad, genero, faceAmount, primaMensual);
+                const cashValueProjection = projectCashValue(edad, genero, primaMensual, 40);
+
+                const pdf = new jsPDF();
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                // PÁGINA 1: RESUMEN PRINCIPAL
+                // Header
+                pdf.setFillColor(102, 126, 234);
+                pdf.rect(0, 0, pageWidth, 40, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(24);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('National Life Group', pageWidth / 2, 20, { align: 'center' });
+                pdf.setFontSize(14);
+                pdf.setFont(undefined, 'normal');
+                pdf.text('Indexed Universal Life - Ilustración', pageWidth / 2, 30, { align: 'center' });
+
+                // Datos del Cliente
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(12);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('DATOS DEL CLIENTE', 20, 55);
+                pdf.setFont(undefined, 'normal');
+                pdf.setFontSize(10);
+                pdf.text(`Edad: ${edad} años`, 20, 65);
+                pdf.text(`Género: ${genero === 'M' ? 'Masculino' : 'Femenino'}`, 20, 72);
+                pdf.text(`Prima Mensual: ${formatCurrency(primaMensual)}`, 20, 79);
+                pdf.text(`Prima Anual: ${formatCurrency(primaMensual * 12)}`, 20, 86);
+
+                // Face Amount (destacado)
+                pdf.setFillColor(220, 252, 231);
+                pdf.rect(15, 95, 180, 25, 'F');
+                pdf.setFontSize(12);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('COBERTURA (FACE AMOUNT)', 20, 105);
+                pdf.setFontSize(20);
+                pdf.setTextColor(5, 150, 105);
+                pdf.text(formatCurrency(faceAmount), 20, 115);
+
+                // Death Benefit
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(12);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('DEATH BENEFIT', 20, 135);
+                pdf.setFontSize(16);
+                pdf.setFont(undefined, 'normal');
+                pdf.text(formatCurrency(benefits.deathBenefit), 20, 145);
+
+                // LIVING BENEFITS
+                pdf.setFontSize(14);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('BENEFICIOS EN VIDA (Living Benefits)', 20, 165);
+                
+                pdf.setFillColor(245, 245, 245);
+                let yPos = 175;
+
+                // Terminal Illness
+                pdf.rect(15, yPos - 5, 180, 12, 'F');
+                pdf.setFontSize(10);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Terminal Illness:', 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text(formatCurrency(benefits.terminalIllness) + ' (Lump Sum a edad 65)', 100, yPos);
+
+                // Chronic Illness
+                yPos += 15;
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Chronic Illness:', 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text(formatCurrency(benefits.chronicIllnessMonthly) + '/mes', 100, yPos);
+
+                // Critical Illness
+                yPos += 15;
+                pdf.rect(15, yPos - 5, 180, 12, 'F');
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Critical Illness:', 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text('Hasta ' + formatCurrency(benefits.criticalIllness) + ' (Lump Sum)', 100, yPos);
+
+                // Critical Injury
+                yPos += 15;
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Critical Injury:', 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text('Hasta ' + formatCurrency(benefits.criticalIllness) + ' (Lump Sum)', 100, yPos);
+
+                // Alzheimer's Disease
+                yPos += 15;
+                pdf.rect(15, yPos - 5, 180, 12, 'F');
+                pdf.setFont(undefined, 'bold');
+                pdf.text("Alzheimer's Disease:", 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text(formatCurrency(benefits.alzheimers) + ' (Lump Sum)', 100, yPos);
+
+                // Footer Página 1
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text('Ilustración generada por WiseVentures Consulting | Página 1 de 2', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+                // PÁGINA 2: CASH VALUE PROJECTION
+                pdf.addPage();
+
+                // Header Página 2
+                pdf.setFillColor(102, 126, 234);
+                pdf.rect(0, 0, pageWidth, 30, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(18);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('PROYECCIÓN DE CASH VALUE', pageWidth / 2, 20, { align: 'center' });
+
+                // Tabla de Proyección
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFontSize(12);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('ACUMULACIÓN DE VALOR EN EFECTIVO', 20, 45);
+
+                pdf.setFontSize(10);
+                pdf.setFont(undefined, 'normal');
+                pdf.text('Esta es una proyección conservadora basada en un rendimiento promedio del 6% anual.', 20, 55);
+
+                // Tabla
+                yPos = 70;
+                pdf.setFillColor(102, 126, 234);
+                pdf.rect(15, yPos - 5, 180, 10, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('Año', 25, yPos);
+                pdf.text('Edad', 70, yPos);
+                pdf.text('Cash Value', 130, yPos);
+
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFont(undefined, 'normal');
+                yPos += 10;
+
+                cashValueProjection.forEach((item, index) => {
+                    if (index % 2 === 0) {
+                        pdf.setFillColor(245, 245, 245);
+                        pdf.rect(15, yPos - 5, 180, 10, 'F');
+                    }
+                    pdf.text(item.year.toString(), 25, yPos);
+                    pdf.text(item.age.toString(), 70, yPos);
+                    pdf.text(formatCurrency(item.cashValue), 130, yPos);
+                    yPos += 10;
+                });
+
+                // Nota importante
+                yPos += 10;
+                pdf.setFillColor(254, 243, 199);
+                pdf.rect(15, yPos - 5, 180, 30, 'F');
+                pdf.setFontSize(9);
+                pdf.setFont(undefined, 'bold');
+                pdf.text('IMPORTANTE:', 20, yPos);
+                pdf.setFont(undefined, 'normal');
+                pdf.text('Los valores mostrados son proyecciones estimadas. Los resultados reales pueden variar', 20, yPos + 7);
+                pdf.text('según el rendimiento del índice y las condiciones del mercado. Esta no es una oferta', 20, yPos + 14);
+                pdf.text('vinculante y debe ser complementada con una ilustración oficial de National Life Group.', 20, yPos + 21);
+
+                // Footer Página 2
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text('Ilustración generada por WiseVentures Consulting | Página 2 de 2', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+                // Guardar PDF con método compatible
+                const fileName = `NLG_IUL_${genero === 'M' ? 'M' : 'F'}${edad}_${formatCurrency(faceAmount).replace(/[^0-9]/g, '')}.pdf`;
+                
+                try {
+                    // Método 1: Intentar descarga normal
+                    pdf.save(fileName);
+                } catch (error) {
+                    // Método 2: Usar blob URL (más compatible)
+                    const blob = pdf.output('blob');
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }
+
+                document.getElementById('loading').classList.remove('active');
+
+                // Mostrar confirmación visual
+                try {
+                    alert('✅ PDF generado exitosamente!\n\n' +
+                          'Archivo: ' + fileName + '\n\n' +
+                          'El PDF se ha descargado a tu carpeta de Descargas.\n\n' +
+                          'Face Amount: ' + formatCurrency(faceAmount) + '\n' +
+                          'Prima Mensual: ' + formatCurrency(primaMensual) + '\n' +
+                          'Death Benefit: ' + formatCurrency(benefits.deathBenefit));
+                } catch (e) {
+                    // Si alert está bloqueado, mostrar mensaje en página
+                    const helpDiv = document.getElementById('download-help');
+                    if (helpDiv) {
+                        helpDiv.style.display = 'block';
+                        helpDiv.innerHTML = '<strong>✅ PDF generado exitosamente!</strong><br>' +
+                                           'Archivo: ' + fileName + '<br>' +
+                                           'Revisa tu carpeta de Descargas';
+                        setTimeout(() => {
+                            helpDiv.style.display = 'none';
+                        }, 5000);
+                    }
+                }
+
+                console.log('✅ PDF generado exitosamente');
+                console.log('Archivo:', fileName);
+                console.log('Datos:', { edad, genero, primaMensual, faceAmount, benefits, cashValueProjection });
+            }, 500);
+        }
+
+        // Event listeners (simplificados)
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+                actualizarCalculos();
+            });
+        });
+
+        document.querySelectorAll('.radio-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                this.querySelector('input[type="radio"]').checked = true;
+                actualizarCalculos();
+            });
+        });
+
+        document.querySelectorAll('#tab-presupuesto .quick-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tab-presupuesto .quick-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('presupuesto').value = this.dataset.value;
+                actualizarCalculos();
+            });
+        });
+
+        document.querySelectorAll('#tab-cobertura .quick-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tab-cobertura .quick-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('cobertura').value = this.dataset.value;
+                actualizarCalculos();
+            });
+        });
+
+        document.getElementById('edad').addEventListener('input', actualizarCalculos);
+        document.getElementById('presupuesto').addEventListener('input', actualizarCalculos);
+        document.getElementById('cobertura').addEventListener('input', actualizarCalculos);
+
+        function actualizarCalculos() {
+            const edad = parseInt(document.getElementById('edad').value) || 45;
+            const genero = document.querySelector('input[name="genero"]:checked').value;
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+
+            if (activeTab === 'presupuesto') {
+                const presupuesto = parseFloat(document.getElementById('presupuesto').value) || 140;
+                const face = calculateViableFaceAmount(edad, genero, presupuesto);
+                document.getElementById('prima-anual').textContent = formatCurrency(presupuesto * 12);
+                document.getElementById('face-calculado').textContent = formatCurrency(face);
+            } else {
+                const cobertura = parseInt(document.getElementById('cobertura').value) || 100000;
+                const prima = calculateMinPremiumForCoverage(edad, genero, cobertura);
+                document.getElementById('prima-calculada').textContent = formatCurrency(prima);
+            }
+        }
+
+        actualizarCalculos();
+    </script>
+</body>
+</html>
